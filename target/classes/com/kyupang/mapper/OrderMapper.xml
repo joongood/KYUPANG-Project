@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.OrderMapper">
+	
+	<select id="read" resultType="com.kyupang.model.CartVO">
+		SELECT * FROM cart where cart = #{session_cart} ORDER BY ctid LIMIT 1;
+	</select>
+	
+	<insert id="create">
+      	insert into ordertran (odid, buyer, dealdate, trandate, payprice, transtatus, paymethod, zipcode, address, addressdetail, cart)
+      	values (#{odid}, #{buyer}, now(), now(), #{payprice}, "입금대기", "무통장거래", #{zipcode}, #{address}, #{addressdetail}, #{cart})
+   	</insert>
+   	
+   	<insert id="save">
+      	insert into toss (cart, buyer, zipcode, address, addressdetail, code, point)
+      	values (#{cart}, #{buyer}, #{zipcode}, #{address}, #{addressdetail}, #{code}, #{point})
+   	</insert>
+   	
+   	<select id="saveread" resultType="com.kyupang.model.TossVO">
+		SELECT * FROM toss where cart = #{session_cart} ORDER BY tid DESC LIMIT 1;;
+	</select>
+   	
+   	<insert id="tosscreate">
+      	insert into ordertran (odid, buyer, dealdate, trandate, payprice, paymethod, zipcode, address, addressdetail, cart)
+      	values (#{odid}, #{buyer}, now(), now(), #{payprice}, "토스페이", #{zipcode}, #{address}, #{addressdetail},#{cart})
+   	</insert>
+   	
+   	<insert id="kakaocreate">
+      	insert into ordertran (odid, buyer, dealdate, trandate, payprice, paymethod, zipcode, address, addressdetail, cart)
+      	values (#{odid}, #{buyer}, now(), now(), #{payprice}, "카카오페이", #{zipcode}, #{address}, #{addressdetail}, #{cart})
+   	</insert>
+	
+	<update id="update">
+		update cart set cartstatus ="주문완료" where cart = #{cart}
+	</update>
+	
+	<update id="usedCoupon">
+		UPDATE coupon SET used = "Y" WHERE code =#{code}
+	</update>
+	
+	<update id="usedpoint">
+		UPDATE member SET mpoint = mpoint - #{point} WHERE memail =#{session_id}
+	</update>
+	
+	<select id="pluspoint" resultType="int">
+		SELECT sum(point*qty) FROM cart where cart = #{session_cart}
+	</select>
+	
+	<update id="addpoint">
+		UPDATE member SET mpoint = mpoint + #{point} WHERE memail =#{session_id}
+	</update>
+    
+    <insert id="depositcreate">
+      	insert into deposit (odid, allpoint)
+      	values (#{odid}, #{allpoint})
+   	</insert>
+   	
+   	<update id="minusqty">
+    	UPDATE Product p INNER JOIN Cart c ON p.pid = c.pid SET p.qty = p.qty - c.qty WHERE c.cart = #{session_cart} AND p.qty >= c.qty;
+	</update>
+   	
+</mapper>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.MutualMapper">
+	<!-- product -->
+	<select id="countAllProducts" resultType="int">
+        SELECT COUNT(*) FROM product where mutual= #{session_id} or mutual= #{session_label}
+    </select>
+	
+	<select id="findProductsByCriteria" resultType="com.kyupang.model.ProductVO">
+		SELECT * FROM product where mutual=#{session_id} or mutual= #{session_label} ORDER BY pid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+    </select>
+    
+    <select id="read" resultType="com.kyupang.model.ProductVO">
+		select * from product where pid =#{pid}
+	</select>
+	
+	<select id="cateMain" resultType="com.kyupang.model.CategoryVO">
+		select * from category where length(cid)=2 and cuse='Y'
+	</select>
+	
+	<select id="cateMiddle" resultType="com.kyupang.model.CategoryVO">
+		select * from category where left(cid, 2)= #{cid} and length(cid)=4 and cuse='Y'
+	</select>
+	
+	<select id="categoryJoin" resultType="com.kyupang.model.CategoryNameDTO">
+		SELECT c.cname AS categoryname, p.maincate,(SELECT cname FROM category WHERE cid = p.middlecate) AS middlecatename, p.middlecate FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate WHERE p.pid =#{pid}
+	</select>
+
+	<insert id="create">
+		insert into product (maincate, middlecate, mutual, pname, price, point, qty, description, product_option, option_value1, option_value2, option_value3, option_value4, option_value5, productuse, hit, suggest, newproduct, popular, salecheck, saleprice, file1, file2, file3, file4, file5, listingdate, readcount) values (#{maincate}, #{middlecate}, #{mutual}, #{pname}, #{price}, #{point}, #{qty}, #{description}, #{product_option}, #{option_value1}, #{option_value2}, #{option_value3}, #{option_value4}, #{option_value5}, #{productuse}, #{hit}, #{suggest}, #{newproduct}, #{popular}, #{salecheck}, #{saleprice}, #{file1}, #{file2}, #{file3}, #{file4}, #{file5}, NOW(), "0")
+	</insert>
+
+	<update id="update" parameterType="com.kyupang.model.ProductVO">
+	<![CDATA[
+		UPDATE product SET maincate =#{maincate}, middlecate =#{middlecate}, mutual =#{mutual}, pname =#{pname}, price =#{price}, point =#{point}, qty =#{qty}, description =#{description}, product_option =#{product_option}, option_value1 =#{option_value1}, option_value2 =#{option_value2}, option_value3 =#{option_value3}, option_value4 =#{option_value4}, option_value5 =#{option_value5}, productuse =#{productuse}, hit =#{hit}, suggest =#{suggest}, newproduct =#{newproduct}, popular =#{popular}, salecheck =#{salecheck}, saleprice =#{saleprice}, file1 =#{file1}, file2 =#{file2}, file3 =#{file3}, file4 =#{file4}, file5 =#{file5} WHERE pid =#{pid}
+	]]>
+	</update>
+
+	<delete id="delete">
+		delete from product where pid =#{pid}
+	</delete>
+	
+	
+	<!-- mutual -->
+	<select id="readStore" resultType="com.kyupang.model.StoreVO">
+		select * from store where semail = #{session_id}
+	</select>
+	
+	<update id="updateStore">
+		update store set mutual = #{mutual}, bnumber = #{bnumber}, spassword = #{spassword}, ownername = #{ownername}, sphone = #{sphone}, zipcode = #{zipcode}, address = #{address}, addressdetail = #{addressdetail}  where semail = #{semail}
+	</update>
+	
+	
+	<!-- banner -->
+	<select id="countAllBanners" resultType="int">
+        SELECT COUNT(*) FROM banner where mutual= #{session_id} or mutual= #{session_label}
+    </select>
+	
+	<select id="findBannersByCriteria" resultType="com.kyupang.model.BannerVO">
+		SELECT * FROM banner where mutual= #{session_id} or mutual= #{session_label} ORDER BY bid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+    </select>
+    
+   	<insert id="create_b">
+		INSERT INTO banner (title, bprice, imageurl, mutual, requestdate, startdate, enddate, approved) values (#{title}, #{bprice}, #{imageurl}, #{mutual}, NOW(), #{startdate}, #{enddate}, "승인대기")
+	</insert>
+	
+	<select id="readBanner" resultType="com.kyupang.model.BannerVO">
+		SELECT * FROM banner WHERE bid =#{bid}
+	</select>
+	
+	<update id="updateBanner">
+		UPDATE banner SET title = #{title}, bprice =#{bprice}, imageurl =#{imageurl}, mutual =#{mutual}, startdate =#{startdate}, enddate =#{enddate} WHERE bid =#{bid}
+	</update>
+	
+	<update id="delBanner">
+		UPDATE banner SET approved = "취소" WHERE bid =#{bid}
+	</update>
+	
+	
+	<!-- member -->
+	<select id="countAllMembers" resultType="int">
+        SELECT COUNT(*) FROM member where memberstatus != "탈퇴" and label =#{session_label}
+    </select>
+	
+	<select id="findMembersByCriteria" resultType="com.kyupang.model.MemberVO">
+		<![CDATA[
+			SELECT * FROM member WHERE memberstatus != "탈퇴" and label =#{session_label} ORDER BY mid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+        ]]>
+    </select>
+
+	<insert id="create_m">
+		insert into member (memail, mname, mage, mgender, mpassword, mphone, zipcode, address, addressdetail, mlevel, identification, memberstatus, loginstatus, joindate, label) values (#{memail}, #{mname}, #{mage}, #{mgender}, #{mpassword}, #{mphone}, #{zipcode}, #{address}, #{addressdetail}, '4', 'Y', '정상', '일반', NOW(), #{label})
+	</insert>
+
+	<select id="read_m" resultType="com.kyupang.model.MemberVO">
+		select * from member where mid = #{mid}
+	</select>
+
+	<update id="update_m">
+		update member set memail =#{memail}, mname =#{mname}, mage =#{mage}, mgender =#{mgender}, mphone =#{mphone}, zipcode =#{zipcode}, address =#{address}, addressdetail =#{addressdetail}, mlevel =#{mlevel}, memberstatus =#{memberstatus} where mid = #{mid}
+	</update>
+
+	<delete id="delete_m">
+		update member set memberstatus = "탈퇴" where mid = #{mid}
+	</delete>
+	
+	
+	<!-- cal -->
+	<select id="countAllCal" resultType="int">
+        SELECT COUNT(*) FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart WHERE mutual = #{session_label} AND transtatus = '주문완료';
+    </select>
+	
+	<select id="findCalByCriteria" resultType="com.kyupang.model.CartTranDTO">
+		SELECT * FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart WHERE mutual = #{session_label} AND transtatus = '주문완료' ORDER BY o.tranid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+    </select>
+    
+   	<update id="updateCal">
+		UPDATE cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart SET c.cal = '정산요청' WHERE c.ctid = #{ctid}
+	</update>
+	
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.CartMapper">
+
+	<select id="countAllcart" resultType="int">
+        SELECT COUNT(*) FROM cart where cart = #{session_cart}
+    </select>
+	
+	<insert id="addcart">		
+		insert into cart (cart, mid, mutual, pid, pname, price, point, qty, file1, option_value1, option_value2, option_value3, option_value4, option_value5)
+		values (#{cart}, #{mid}, #{mutual}, #{pid}, #{pname}, #{price}, #{point}, #{qty}, #{file1}, #{option_value1}, #{option_value2}, #{option_value3}, #{option_value4}, #{option_value5})
+	</insert>
+	
+	<select id="cartlist" resultType="com.kyupang.model.CartVO">
+		<![CDATA[
+			SELECT c.*, 
+	        	CASE WHEN p.saleprice != 0 THEN p.saleprice ELSE p.price END AS productPrice
+	        FROM cart c
+	        JOIN product p ON c.pid = p.pid
+	        WHERE c.cart = #{session_cart} and c.cartstatus = '준비'
+	        ORDER BY c.ctid DESC
+	        LIMIT #{criteria.pageStart}, #{criteria.perPageNum}
+		]]>
+	</select>
+	
+	<delete id="cartdelete">
+		delete from cart where ctid = #{ctid}
+	</delete>
+	
+	<select id="carttotalprice" resultType="int">
+		<![CDATA[
+	        SELECT SUM(CASE WHEN p.saleprice != 0 THEN p.saleprice * c.qty ELSE p.price * c.qty END) AS totalprice
+	        FROM cart c
+	        JOIN product p ON c.pid = p.pid
+	        WHERE c.cart = #{session_cart}
+	    ]]>
+	</select>
+	
+	<!-- coupon -->
+	<select id="couponList" resultType="com.kyupang.model.CouponVO">
+		select * from coupon where memail = #{session_id} and used = "N"
+	</select>
+	
+	<update id="usedCoupon">
+		UPDATE coupon SET used = "Y" WHERE code =#{code}
+	</update>
+	
+	<update id="qtyupdate">
+		update cart set qty = #{qty} where pid = #{pid} and cart = #{session_cart}
+	</update>
+	
+	<select id="getMaxQty" resultType="int">
+		select qty from product where pid = #{pid}
+	</select>
+</mapper>

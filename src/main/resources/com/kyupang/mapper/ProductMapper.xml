@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.ProductMapper">
+	
+	<select id="cateview" resultType="com.kyupang.model.CategoryNameDTO">
+		SELECT p.pname, c1.cname AS categoryname, c2.cname AS middlecatename FROM product p INNER JOIN category c1 ON p.maincate = c1.cid INNER JOIN category c2 ON p.middlecate = c2.cid WHERE p.pid = #{pid};
+	</select>
+	
+	<!--상품 클릭시 조회수 증가  -->
+    <update id="update">
+    	update product set readcount = readcount + 1 where pid = #{pid}
+    </update>
+	
+	<select id="option" resultType="com.kyupang.model.ProductVO">
+		select * from product where pid = #{pid} and product_option = "Y"
+	</select>
+	
+	<select id="read" resultType="com.kyupang.model.ProductVO">
+		select * from product where pid = #{pid}
+	</select>
+	
+	<select id="countAllProductIndex" resultType="int">
+        SELECT COUNT(*) from product
+    </select>
+    
+    <select id="productlistIndex" resultType="com.kyupang.model.ProductVO">
+		SELECT * from product ORDER BY pid DESC LIMIT 0, 10
+    </select>
+			
+	<select id="countAllProduct" resultType="int">
+        SELECT COUNT(*)
+        <include refid="cate"/>
+    </select>
+	
+	<select id="productlist" resultType="com.kyupang.model.ProductVO">
+		SELECT *  
+		<include refid="cate"/> 
+		ORDER BY pid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum}
+    </select>
+    
+    <select id="countAllProductp" resultType="int">
+        SELECT COUNT(*)
+        <include refid="catep"/>
+    </select>
+    
+    <select id="productlistp" resultType="com.kyupang.model.ProductVO">
+		SELECT *       
+       	<include refid="catep"/>
+		ORDER BY pid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+    </select>
+    
+    <select id="countAllProducts" resultType="int">
+        SELECT COUNT(*)
+        <include refid="cates"/>
+    </select>
+    
+    <select id="productlists" resultType="com.kyupang.model.ProductVO">
+		SELECT *		
+		<include refid="cates"/>
+		ORDER BY pid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+	</select>
+	
+	<select id="countAllProducts2" resultType="int">
+        SELECT COUNT(*)
+        <include refid="cates2"/>
+    </select>
+    
+    <select id="productlists2" resultType="com.kyupang.model.ProductVO">
+		SELECT *
+        <include refid="cates2"/>
+		ORDER BY pid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+    </select>
+    
+    <select id="countAllProductb" resultType="int">
+        SELECT COUNT(*)
+        <include refid="cateb"/>
+    </select>
+    
+    <select id="productlistb" resultType="com.kyupang.model.ProductVO">
+		SELECT *
+        <include refid="cateb"/>
+		ORDER BY pid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+    </select>
+    
+    <select id="countSearchProduct" resultType="int">
+		select count(*)
+ 		
+ 		<include refid="search"></include>
+ 		
+	</select>
+	
+	<select id="SearchProductList" resultType="com.kyupang.model.ProductVO">
+		select *
+		
+		<include refid="search"></include>
+		
+		ORDER BY pid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum}
+		
+	</select>
+    
+    <select id="catelist" resultType="com.kyupang.model.CategoryVO">
+			SELECT * FROM category ORDER BY cid;
+    </select>
+    
+    <select id="brandlist" resultType="com.kyupang.model.StoreVO">
+			SELECT * FROM store ORDER BY sid;
+    </select>    
+    
+    <insert id="wishCreate">
+      	insert into wishlist (mid, mutual, pid, price, point, qty, file1)
+      	values (#{mid}, #{mutual}, #{pid}, #{price}, #{point}, #{qty}, #{file1})
+   	</insert>
+    
+   	<!-- sql -->
+	<sql id="cate">
+    	<choose>
+			<when test="cid != null and cid != '' and cid.toString().length() == 2" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate where c.cid = #{cid}
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 4" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.middlecate where c.cid = #{cid}
+			</when>
+			<otherwise>
+				FROM product
+			</otherwise>	
+		</choose>
+	</sql>
+	    
+    <sql id="catep">
+    	<choose>
+			<when test="cid != null and cid != '' and cid.toString().length() == 2" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate where c.cid = #{cid} and popular="Y"
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 4" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.middlecate where c.cid = #{cid} and popular="Y"
+			</when>
+			<otherwise>
+				FROM product where popular="Y"
+			</otherwise>	
+		</choose>
+	</sql>
+	
+	<sql id="cates">
+    	<choose>
+			<when test="cid != null and cid != '' and cid.toString().length() == 2" >
+				<![CDATA[
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate where c.cid = #{cid} and saleprice <> "0" and (saleprice * 100 / price) <=80
+				]]>
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 4" >
+				<![CDATA[
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.middlecate where c.cid = #{cid} and saleprice <> "0" and (saleprice * 100 / price) <=80
+				]]>
+			</when>
+			<otherwise>
+				<![CDATA[
+				FROM product where saleprice <> "0" and (saleprice * 100 / price) <=80
+				]]>
+			</otherwise>	
+		</choose>
+	</sql>
+	
+	<sql id="cates2">
+    	<choose>
+			<when test="cid != null and cid != '' and cid.toString().length() == 2" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate where c.cid = #{cid} and suggest="Y"
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 4" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.middlecate where c.cid = #{cid} and suggest="Y"
+			</when>
+			<otherwise>
+				FROM product where suggest="Y"
+			</otherwise>	
+		</choose>
+	</sql>
+	
+	<sql id="cateb">
+    	<choose>			
+			<when test="mutual != null and mutual != '' and cid != null and cid != '' and cid.toString().length() == 2" >
+				FROM store AS s INNER JOIN product AS p ON s.mutual = p.mutual INNER JOIN category c ON c.cid = p.maincate where s.mutual = #{mutual} and c.cid = #{cid}
+			</when>
+			<when test="mutual != null and mutual != '' and cid != null and cid != '' and cid.toString().length() == 4" >
+				FROM store AS s INNER JOIN product AS p ON s.mutual = p.mutual INNER JOIN category c ON c.cid = p.middlecate where s.mutual = #{mutual} and c.cid = #{cid}
+			</when>
+			<when test="mutual != null and mutual != ''" >
+				FROM store AS s INNER JOIN product AS p ON s.mutual = p.mutual where s.mutual = #{mutual}
+			</when>
+			<otherwise>
+				FROM product
+			</otherwise>	
+		</choose>
+	</sql>
+	
+	<sql id="search">
+		<choose>
+			<when test="cid != null and cid != '' and cid.toString().length() == 2 and searchType == 'productName'" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate where c.cid = #{cid} and p.pname like concat('%',#{criteria.search},'%')
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 4 and searchType == 'productName'" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.middlecate where c.cid = #{cid} and p.pname like concat('%',#{criteria.search},'%')
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 2 and searchType == 'brand'" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate where c.cid = #{cid} and p.mutual like concat('%',#{criteria.search},'%')
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 4 and searchType == 'brand'" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.middlecate where c.cid = #{cid} and p.mutual like concat('%',#{criteria.search},'%')
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 2" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate where c.cid = #{cid} and (p.pname like concat('%',#{criteria.search},'%') or p.mutual like concat('%',#{criteria.search},'%'))
+			</when>
+			<when test="cid != null and cid != '' and cid.toString().length() == 4" >
+				FROM category AS c INNER JOIN product AS p ON c.cid = p.middlecate where c.cid = #{cid} and (p.pname like concat('%',#{criteria.search},'%') or p.mutual like concat('%',#{criteria.search},'%'))
+			</when>
+			<when test="searchType == 'productName'">
+				from product where pname like concat('%',#{criteria.search},'%')
+			</when>
+			<when test="searchType == 'brand'">
+				from product where mutual like concat('%',#{criteria.search},'%')
+			</when>
+			<otherwise>
+				from product where pname like concat('%',#{criteria.search},'%') or mutual like concat('%',#{criteria.search},'%')
+			</otherwise>	
+		</choose>
+	</sql>
+	
+</mapper>

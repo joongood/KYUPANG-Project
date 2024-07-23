@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.StatisticsMapper">
+<!-- admin -->
+    <!-- 결제수단 통계 조회 -->
+	<select id="getCountToss" resultType="int">
+        SELECT COUNT(*) 
+        FROM cart AS c 
+        INNER JOIN ordertran AS o 
+        ON c.cart = o.cart 
+        WHERE o.paymethod = '토스페이'
+    </select>
+    
+   	<select id="getCountKakao" resultType="int">
+        SELECT COUNT(*) 
+        FROM cart AS c 
+        INNER JOIN ordertran AS o 
+        ON c.cart = o.cart 
+        WHERE o.paymethod = '카카오페이'
+    </select>
+    
+    <select id="getCountDeposit" resultType="int">
+        SELECT COUNT(*) 
+        FROM cart AS c 
+        INNER JOIN ordertran AS o 
+        ON c.cart = o.cart 
+        WHERE o.paymethod = '무통장거래'
+    </select>
+    
+    <select id="getCountAll" resultType="int">
+        SELECT COUNT(*) 
+        FROM cart AS c 
+        INNER JOIN ordertran AS o 
+        ON c.cart = o.cart
+    </select>
+    
+	<!-- 방문자 통계 조회 -->
+	<select id="getVisitorStatsForLastWeek" resultType="com.kyupang.model.VisitorStats">
+	<![CDATA[
+	    SELECT visit_date AS visitDate, COUNT(*) AS visitorCount
+	    FROM visitor_stats
+	    WHERE visit_date BETWEEN #{startDate} AND #{endDate}
+	    GROUP BY visit_date
+	]]>
+	</select>
+    
+    <!-- 최근 일주일 이내 가입자 비율 -->
+    <select id="getRecentSignupRate" resultType="double">
+    <![CDATA[
+        SELECT (SELECT COUNT(*) FROM member WHERE joindate >= CURDATE() - INTERVAL 7 DAY) / COUNT(*) * 100 
+        AS recent_signup_rate 
+        FROM member
+    ]]>
+    </select>
+    
+    <!-- 최근 일주일 이내 탈퇴자 비율 -->
+    <select id="getRecentUnsubscribeRate" resultType="double">
+    <![CDATA[
+        SELECT 
+            (SELECT COUNT(*) FROM member WHERE memberstatus = '탈퇴' AND joindate >= CURDATE() - INTERVAL 7 DAY) / COUNT(*) * 100 
+            AS recent_unsubscribe_rate
+        FROM member
+    ]]>
+    </select>
+    
+    <!-- 오늘 날짜 기준 전체 주문 수 -->
+    <select id="getTotalOrdersToday" resultType="int">
+    <![CDATA[
+        SELECT COUNT(*) 
+        FROM cart AS c 
+        INNER JOIN ordertran AS o 
+        ON c.cart = o.cart
+        WHERE DATE(trandate) = CURDATE()
+    ]]>
+    </select>
+    
+    <!-- 결제가격 합계가 높은 순으로 장바구니 목록 조회 -->
+    <select id="getCartListOrderByTotalPayPriceDesc" resultType="com.kyupang.model.CartTranDTO">
+    <![CDATA[
+        SELECT c.mutual, SUM(o.payprice) AS total_payprice
+        FROM cart AS c
+        INNER JOIN ordertran AS o ON c.cart = o.cart
+        GROUP BY c.mutual
+        ORDER BY total_payprice DESC
+    ]]>
+    </select>
+    
+<!-- mutual -->
+	<!-- 월별 매출 조회 -->
+    <select id="getMonthlySales" resultType="java.util.Map">
+    <![CDATA[
+		SELECT 
+		    c.mutual, 
+		    DATE_FORMAT(o.trandate, '%m') AS month, 
+		    SUM(o.payprice) AS monthly_sales
+		FROM 
+		    cart AS c
+		    INNER JOIN ordertran AS o ON c.cart = o.cart
+		WHERE 
+		    DATE_FORMAT(o.trandate, '%Y-%m-%d') BETWEEN DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 YEAR), '%Y-%m-%d') AND DATE_FORMAT(CURDATE(), '%Y-%m-%d')
+		    AND c.mutual = '나이키'
+		GROUP BY 
+		    c.mutual, DATE_FORMAT(o.trandate, '%m')
+		ORDER BY 
+		    c.mutual, month;
+
+    ]]>
+    </select>
+
+    <!-- 가장 많이 팔리는 상품 리스트 조회 -->
+    <select id="getTopSellingProducts" resultType="java.util.Map">
+    <![CDATA[
+        SELECT c.mutual, p.pname AS product_name, 
+       SUM(c.qty) AS total_quantity_sold,
+       SUM(o.payprice) AS total_sales_amount
+	   FROM cart AS c
+	   INNER JOIN ordertran AS o ON c.cart = o.cart
+	   INNER JOIN product AS p ON c.pid = p.pid
+	   WHERE c.mutual = #{session_label}
+	   GROUP BY c.mutual, c.pid
+	   ORDER BY total_quantity_sold DESC
+	   LIMIT 10;
+    ]]>
+    </select>  
+    
+</mapper>

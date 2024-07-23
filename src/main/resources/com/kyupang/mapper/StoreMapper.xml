@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.StoreMapper">
+
+	<select id="emailCheck" resultType="int">
+        select count(*) from store where semail = #{semail}
+   	</select>
+   	
+   	<select id="bnumberCheck" resultType="int">
+        select count(*) from store where bnumber = #{bnumber}
+   	</select>
+
+	<insert id="create">
+      	insert into store (semail, mutual, ownername, bnumber, bnumberok, identification, sphone, spassword, zipcode, address,addressdetail,joindate,secretkey)
+      	values (#{semail}, #{mutual}, #{ownername}, #{bnumber}, #{bnumberok}, #{identification}, #{sphone}, #{spassword}, #{zipcode}, #{address}, #{addressdetail},now(), #{secretkey})
+   	</insert>
+
+	<select id="login" resultType="com.kyupang.model.StoreVO">
+		select * from store where semail = #{semail} and spassword = #{spassword}
+	</select>
+	
+	<select id="read" resultType="com.kyupang.model.StoreVO">
+		select * from store where semail = #{session_id}	
+	</select>
+	
+	<update id="otpUpdate">
+		update store set identification="Y", secretkey = #{secretKey} where semail =#{session_id}
+	</update>
+
+</mapper>

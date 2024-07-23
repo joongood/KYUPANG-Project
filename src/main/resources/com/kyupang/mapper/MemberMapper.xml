@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.MemberMapper">
+
+	<select id="emailCheck" resultType="int">
+        select count(*) from member where memail = #{memail}
+   	</select>
+
+	<insert id="create">
+      	insert into member (mid, memail, mname, identification, mage, mgender, mpassword, mphone, zipcode, address, addressdetail, joindate)
+      	values (#{mid}, #{memail}, #{mname}, #{identification}, #{mage}, #{mgender}, #{mpassword}, #{mphone}, #{zipcode}, #{address}, #{addressdetail}, now())
+   	</insert>
+
+	<select id="login" resultType="com.kyupang.model.MemberVO">
+		select * from member where memail = #{memail} and mpassword = #{mpassword}
+	</select>
+
+	<select id="read" resultType="com.kyupang.model.MemberVO">
+		select * from member where memail = #{session_id}
+	</select>
+
+	<update id="update">
+		update member set mname = #{mname}, mage = #{mage}, mgender = #{mgender}, mpassword = #{mpassword}, mphone = #{mphone}, zipcode = #{zipcode}, address = #{address}, addressdetail = #{addressdetail}  where memail = #{memail}
+	</update>
+	
+	<insert id="kakaoLogin">
+		insert into member (memail, mpassword, mname, loginstatus, joindate)
+		values (#{memail}, #{mpassword}, #{mname}, "소셜", now())
+	</insert>
+	
+	<insert id="naverLogin">
+		insert into member (memail, mpassword, mname, loginstatus, joindate)
+		values (#{memail}, #{mpassword}, #{mname}, "소셜", now())
+	</insert>
+	
+	<update id="supdate">
+		update member set mname = #{mname}, identification = "Y", mage = #{mage}, mgender = #{mgender}, mphone = #{mphone}, zipcode = #{zipcode}, address = #{address}, addressdetail = #{addressdetail}  where memail = #{memail}
+	</update>
+
+	<delete id="cartDelete">
+      	delete from cart where cart = #{session_cart}
+    </delete>
+    
+   	<select id="getPoint" resultType="int">
+		select mpoint from member where memail = #{session_id}
+	</select>
+	
+</mapper>

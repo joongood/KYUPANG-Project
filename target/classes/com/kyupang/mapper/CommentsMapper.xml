@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.CommentsMapper">
+
+	<select id="CommentsList" resultType="com.kyupang.model.CommentsVO">
+		select * from comments where pid = #{pid} order by cmid desc
+	</select>
+	
+	<insert id="addComments">
+		insert into comments (pid, comment_text, writer, writedate) values (#{pid},#{comment_text},#{writer},now())
+	</insert>
+	
+	<select id="commentsPage" resultType="com.kyupang.model.CommentsVO">
+		select * from comments where pid = #{pid} order by cmid desc limit #{criteria.pageStart}, #{criteria.perPageNum}
+	</select>
+	
+	<select id="count" resultType="int">
+		select count(*) from comments where pid = #{pid}
+	</select>
+	
+	<update id="modifyComments">
+		update comments set comment_text = #{comment_text} where cmid = #{cmid}
+	</update>
+	
+	<delete id="deleteComments">
+		delete from comments where cmid = #{cmid}
+	</delete>
+</mapper>

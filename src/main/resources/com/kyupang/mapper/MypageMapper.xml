@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.MypageMapper">
+
+	<select id="couponlist" resultType="com.kyupang.model.CoupontempVO">
+		select * from coupon where memail = #{session_id} and used = 'N' ORDER BY couponid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+	</select>
+
+	<select id="countAllCoupon" resultType="int">
+        SELECT COUNT(*) FROM coupon where memail = #{session_id} and used = 'N'
+    </select>
+    
+    <select id="cartlist" resultType="com.kyupang.model.CartTranDTO">
+    	SELECT * FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart where o.odid = #{odid} ORDER BY c.ctid DESC LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+    </select>
+    
+    <select id="orderlist" resultType="com.kyupang.model.CartTranDTO">
+	    <![CDATA[
+	    SELECT *
+	    FROM (
+	        SELECT *, ROW_NUMBER() OVER (PARTITION BY cart ORDER BY ctid DESC) as row_num
+	        FROM cart
+	    ) AS c
+	    INNER JOIN ordertran AS o ON c.cart = o.cart
+	    WHERE c.row_num = 1 AND c.mid = #{session_id}
+	    ORDER BY c.ctid DESC
+	    LIMIT #{criteria.pageStart}, #{criteria.perPageNum};
+	    ]]>
+	</select>
+    
+    <select id="countAllcart" resultType="int">
+    	SELECT COUNT(*) FROM cart where mid = #{session_id} and cartstatus != '준비'
+    </select>
+    
+    <select id="countAllorder" resultType="int">
+    	SELECT COUNT(*) FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart where o.odid = #{odid}
+    </select>
+    
+    <select id="pluspoint" resultType="int">
+		SELECT sum(point*qty) FROM cart where cart = #{cart} and pid = #{pid}
+	</select>
+	
+	<update id="minuspoint">
+		UPDATE member SET mpoint = mpoint + #{point} WHERE memail = #{session_id}
+	</update>
+	
+	<update id="cancel">
+		UPDATE cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart set cartstatus = '주문취소' where odid = #{odid} and pid = #{pid}
+	</update>
+	
+	<select id="countoneorder" resultType="int">
+    	SELECT COUNT(*) FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart where o.odid = #{odid}
+    </select>
+</mapper>

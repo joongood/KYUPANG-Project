@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.AdminMapper">
+	
+	<!-- member -->
+	<select id="countAllMembers" resultType="int">
+        SELECT COUNT(*) FROM member where memberstatus != "탈퇴"
+    </select>
+	
+	<select id="findMembersByCriteria" resultType="com.kyupang.model.MemberVO">
+		<![CDATA[
+			SELECT * FROM member WHERE memberstatus != "탈퇴" ORDER BY mid DESC LIMIT #{pageStart}, #{perPageNum};
+        ]]>
+    </select>
+
+	<insert id="create">
+		insert into member (memail, mname, mage, mgender, mpassword, mphone, zipcode, address, addressdetail, mlevel, identification, memberstatus, loginstatus, joindate) values (#{memail}, #{mname}, #{mage}, #{mgender}, #{mpassword}, #{mphone}, #{zipcode}, #{address}, #{addressdetail}, #{mlevel}, 'Y', '정상', '일반', NOW())
+	</insert>
+
+	<select id="read" resultType="com.kyupang.model.MemberVO">
+		select * from member where mid = #{mid}
+	</select>
+
+	<update id="update">
+		update member set memail =#{memail}, mname =#{mname}, mage =#{mage}, mgender =#{mgender}, mphone =#{mphone}, zipcode =#{zipcode}, address =#{address}, addressdetail =#{addressdetail}, mlevel =#{mlevel}, memberstatus =#{memberstatus} where mid = #{mid}
+	</update>
+
+	<delete id="delete">
+		update member set memberstatus = "탈퇴", joindate = NOW() where mid = #{mid}
+	</delete>
+	
+	
+	<!-- store -->
+	<select id="countAllStores" resultType="int">
+        SELECT COUNT(*) FROM store where storestatus != "탈퇴"
+    </select>
+	
+	<select id="findStoresByCriteria" resultType="com.kyupang.model.StoreVO">
+		<![CDATA[
+	        SELECT * FROM store WHERE storestatus != "탈퇴" ORDER BY sid DESC LIMIT #{pageStart}, #{perPageNum};
+        ]]>
+    </select>
+    
+   	<insert id="create_s">
+		insert into store (semail, spassword, mutual, ownername, bnumber, bnumberok, sphone, zipcode, address, addressdetail, joindate) values (#{semail}, #{spassword}, #{mutual}, #{ownername}, #{bnumber}, "Y", #{sphone},#{zipcode}, #{address}, #{addressdetail}, NOW())
+	</insert>
+
+	<select id="read_s" resultType="com.kyupang.model.StoreVO">
+		select * from store where sid = #{sid}
+	</select>
+
+	<update id="update_s">
+		update store set semail =#{semail}, mutual =#{mutual}, ownername =#{ownername}, bnumber =#{bnumber}, sphone =#{sphone}, zipcode =#{zipcode}, address =#{address}, addressdetail =#{addressdetail}, storestatus =#{storestatus}, secretkey =#{secretkey} where sid = #{sid}
+	</update>
+
+	<delete id="delete_s">
+		update store set storestatus = "탈퇴" where sid = #{sid}
+	</delete>
+	
+	
+	<!-- category -->
+	<select id="countAllCategories" resultType="int">
+        SELECT COUNT(*) FROM category where cuse != "N"
+    </select>
+    
+   	<select id="findCategoriesByCriteria" resultType="com.kyupang.model.CategoryVO">
+		SELECT * FROM category LIMIT #{pageStart}, #{perPageNum};
+    </select>
+    
+    <select id="read_c" resultType="com.kyupang.model.CategoryVO">
+		select * from category where cid = #{cid}
+	</select>
+    
+    <insert id="create_c">
+		insert into category (cid, cname, cuse) values (#{cid}, #{cname}, #{cuse})
+	</insert>
+	
+	<update id="update_c">
+		update category set cid =#{cid}, cname =#{cname}, cuse =#{cuse} where cid =#{cid}
+	</update>
+	
+	<delete id="delete_c">
+		delete from category where cid = #{cid}
+	</delete>
+	
+	
+	<!-- banner -->
+	<select id="countAllBanners" resultType="int">
+        SELECT COUNT(*) FROM banner
+    </select>
+	
+	<select id="findBannersByCriteria" resultType="com.kyupang.model.BannerVO">
+		SELECT * FROM banner ORDER BY bid DESC LIMIT #{pageStart}, #{perPageNum}
+    </select>
+    
+    <update id="delBanner">
+		UPDATE banner SET approved = "승인거절", status = "비활성화" WHERE bid =#{bid}
+	</update>
+	
+	<update id="okBanner">
+		UPDATE banner SET approved = "승인", status = "활성화", approvaldate = NOW() WHERE bid =#{bid}
+	</update>
+	
+	<select id="getApprovedBanners" resultType="com.kyupang.model.BannerVO">
+    	SELECT * FROM banner WHERE approved = '승인' and status = "활성화"
+	</select>
+	
+	<update id="updateBannerStatus">
+	    UPDATE banner SET status = #{status} WHERE bid = #{bid}
+	</update>
+	
+	
+	<!-- product -->
+	<select id="countAllProducts" resultType="int">
+        SELECT COUNT(*) FROM product
+    </select>
+	
+	<select id="findProductsByCriteria" resultType="com.kyupang.model.ProductVO">
+		SELECT * FROM product ORDER BY pid DESC LIMIT #{pageStart}, #{perPageNum};
+    </select>
+    
+    <select id="read_p" resultType="com.kyupang.model.ProductVO">
+		select * from product where pid =#{pid}
+	</select>
+	
+	<delete id="delete_p">
+		delete from product where pid =#{pid}
+	</delete>
+	
+	<select id="cateMain" resultType="com.kyupang.model.CategoryVO">
+		select * from category where length(cid)=2 and cuse='Y'
+	</select>
+	
+	<select id="categoryJoin" resultType="com.kyupang.model.CategoryNameDTO">
+		SELECT c.cname AS categoryname, p.maincate,(SELECT cname FROM category WHERE cid = p.middlecate) AS middlecatename, p.middlecate FROM category AS c INNER JOIN product AS p ON c.cid = p.maincate WHERE p.pid =#{pid}
+	</select>
+	
+	<!-- coupon -->
+	<select id="countAllCoupon" resultType="int">
+        SELECT COUNT(*) FROM coupontemp
+    </select>
+	
+	<select id="findCouponByCriteria" resultType="com.kyupang.model.CoupontempVO">
+		SELECT * FROM coupontemp ORDER BY couponid DESC LIMIT #{pageStart}, #{perPageNum};
+    </select>
+    
+    <insert id="insertCoupon">
+		INSERT INTO coupontemp (description, discount, expirydate, minpurchase) VALUES (#{description}, #{discount}, #{expirydate}, #{minpurchase})
+	</insert>
+	
+	
+	<!-- commnet -->
+	<select id="countAllComments" resultType="int">
+        SELECT COUNT(*) FROM comments
+    </select>
+	
+	<select id="findCommentsByCriteria" resultType="com.kyupang.model.CommentsVO">
+		SELECT * FROM comments ORDER BY cmid DESC LIMIT #{pageStart}, #{perPageNum};
+    </select>
+    
+    <delete id="deleteComments">
+		delete from comments where cmid =#{cmid}
+	</delete>
+	
+	<!-- Tran -->
+	<select id="countAllTran" resultType="int">
+        SELECT COUNT(*) FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart;
+    </select>
+	
+	<select id="findTranByCriteria" resultType="com.kyupang.model.CartTranDTO">
+		SELECT * FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart ORDER BY o.tranid DESC LIMIT #{pageStart}, #{perPageNum};
+    </select>
+    
+    <update id="updateTranStatus">
+	    UPDATE ordertran SET transtatus = '주문완료', trandate = NOW() WHERE tranid = #{tranid}
+	</update>
+	
+	
+	<!-- cal -->
+	<!-- cal -->
+	<select id="countAllCal" resultType="int">
+        SELECT COUNT(*) FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart  WHERE c.cal = '정산요청' OR c.cal = '정산완료';
+    </select>
+	
+	<select id="findCalByCriteria" resultType="com.kyupang.model.CartTranDTO">
+		SELECT * FROM cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart WHERE c.cal = '정산요청' OR c.cal = '정산완료' ORDER BY o.tranid DESC LIMIT #{pageStart}, #{perPageNum};
+    </select>
+    
+   	<update id="updateCal">
+		UPDATE cart AS c INNER JOIN ordertran AS o ON c.cart = o.cart SET c.cal = '정산완료', o.dealdate = NOW() WHERE c.ctid = #{ctid}
+	</update>
+	
+
+</mapper>

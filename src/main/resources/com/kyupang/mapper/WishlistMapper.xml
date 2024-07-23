@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kyupang.mapper.WishlistMapper">
+	   
+    <insert id="wishCreate">
+      	insert into wishlist (mid, mutual, pid, pname, price, point, qty, file1)
+      	values (#{mid}, #{mutual}, #{pid}, #{pname}, #{price}, #{point}, #{qty}, #{file1})
+   	</insert>
+   	
+   	<select id="wishlist" resultType="com.kyupang.model.WishlistVO">
+		select * from wishlist where mid = #{session_id}
+	</select>
+	
+	<delete id="wishdelete">
+		delete from wishlist where wid = #{wid}
+	</delete>
+	
+	<insert id="sendcart">
+      	insert into cart (cart, mid, mutual, pid, pname, price, point, qty, file1, option_value1, option_value2, option_value3, option_value4, option_value5)
+      	values (#{cart}, #{vo.mid}, #{vo.mutual}, #{vo.pid}, #{vo.pname}, #{vo.price}, #{vo.point}, #{vo.qty}, #{vo.file1}, #{vo.option_value1}, #{vo.option_value1}, #{vo.option_value3}, #{vo.option_value4}, #{vo.option_value5})
+   	</insert>
+	
+</mapper>
